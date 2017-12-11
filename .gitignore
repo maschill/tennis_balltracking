@@ -1,0 +1,9 @@
+# Add any directories, files, or patterns you don't want to be tracked by version control
+**/.ipynb_checkpoints/**
+/frames/*.png
+tf_*
+ssd_*
+ssd_*/**
+/tensorflow/data/*.record
+/tensorflow/models/faster_rcnn_resnet101_coco_2017_11_08/
+/tensorflow/models/ssd_inception_v2_coco_2017_11_17/

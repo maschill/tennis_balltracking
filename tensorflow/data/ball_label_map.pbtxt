@@ -1,0 +1,19 @@
+item {
+  id: 1
+  name: 'Ball'
+}
+
+item {
+  id: 2
+  name: 'Spieler'
+}
+
+item {
+  id: 3
+  name: 'Tennisschlaeger'
+}
+
+item {
+  id: 4
+  name: 'Aufschlag'
+}
