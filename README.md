@@ -3,14 +3,14 @@
 This README would normally document whatever steps are necessary to get your application up and running.
 
 #ToDo before training
-1.)	Annotated Frames located at ../Videos/VideonameFrames/
+*	Annotated Frames located at ../Videos/VideonameFrames/
 	frames Extract: ffmpeg -i Tennis_Best_Points_2017.mkv frames/image_TBP17_%05d.png
-2.)	Create tf.record files in tensorflow/data; check out tensorflow/README_Lea_tf.txt
-3.)	faster_rcnn_resnet101_coco_2017_11_08 model used for training tensorflow/models/ can be downloaded from 
+*	Create tf.record files in tensorflow/data; check out tensorflow/README_Lea_tf.txt
+*	faster_rcnn_resnet101_coco_2017_11_08 model used for training tensorflow/models/ can be downloaded from 
 	https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md
 	Rename model.ckpt.data-00000-of-00001 to model.ckpt
-4.)	Change paths in tensorflow/model.config file
-5.)	go to models/research/object_detection and run train.py
+*	Change paths in tensorflow/model.config file
+*	go to models/research/object_detection and run train.py
 
 ### What is this repository for? ###
 
