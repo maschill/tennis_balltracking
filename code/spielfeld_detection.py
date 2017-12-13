@@ -5,7 +5,7 @@ import random
 import itertools
 import copy
 from sklearn.cluster import KMeans
-
+from scipy.special import comb
 
 def ptransform(points, h):
     points_new = []
@@ -112,6 +112,7 @@ while cap.isOpened():
     dtheta = .02
 
     num_ints = 0
+    num_clusters = 12
 
     if not lines is None and h_best is None:
         for ph in lines:
@@ -159,7 +160,6 @@ while cap.isOpened():
                     ints.append(c)
                 # cv2.circle(frame, tuple([int(x) for x in c]), 15, (255,255,0), 15, -1)
 
-        num_clusters = 12
         if len(ints) >= num_clusters:
             kmeans = KMeans(num_clusters).fit(ints)
             centers = []
@@ -176,8 +176,9 @@ while cap.isOpened():
     used = None
     epsilon = 500
     done_loops = 0
+    iters = int(comb(num_clusters,4)*.3)+1
     if h_best is None and len(centers) > 3:
-        for _ in range(500):
+        for _ in range(iters):
             corners = centers[np.random.choice(centers.shape[0],4,replace=False)]
             if np.linalg.det(np.hstack((corners[:3],[[1],[1],[1]]))) < epsilon:
                 continue
@@ -330,6 +331,3 @@ while cap.isOpened():
 
 cv2.destroyAllWindows()
 cap.release()
-
-
-np.array([0,1,2,3,4])
