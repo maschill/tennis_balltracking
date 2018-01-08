@@ -4,9 +4,9 @@ import sys
 
 #~/Dokumente/FSU/Anwendungspraktikum/cvtennis/tensorflow/models/ssd_inception_v2_coco_2017_11_17
 #~/Dokumente/FSU/Anwendungspraktikum/cvtennis/tensorflow/models/ssd_inception_v2_coco_2017_11_17
-path = '../GoProFrames/GoProFramesDiff/'
-outpath = '../GoProFrames/GoProFramesDiff/'
-writefile = 'GoProDiffAnnotation.txt'
+path = '../../Videos/GoPro/GoProFrames/'
+outpath = '../annotations/'
+writefile = 'GoProAnnotationSpieler_test.txt'
 
 # from: https://stackoverflow.com/questions/28327020/opencv-detect-mouse-position-clicking-over-a-picture
 def draw_rectangle(event,x,y,flags,param):
@@ -37,7 +37,7 @@ inprogress = True
 f = open(outpath+writefile, 'a')
 
 classes = {ord('f'): 'Ball', ord('d'): 'Spieler', ord('t'): 'Aufschlag', ord('v'): 'Tennisschlaeger'}
-step = 1
+step = 15
 
 for i in range(int(sys.argv[1]), int(sys.argv[2]), step):
 
@@ -47,6 +47,7 @@ for i in range(int(sys.argv[1]), int(sys.argv[2]), step):
 		break
 
 	imgname = 'image_GP_' + format(i, '05') + '.png'
+	print(path + imgname)
 	image = cv2.imread(path + imgname)
 	copy = image.copy()
 	cv2.namedWindow('image')
