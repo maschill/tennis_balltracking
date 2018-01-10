@@ -3,21 +3,21 @@ import numpy as np
 '''
 From 3D position and estimated court edges 3D position of players and ball will be calculated
 '''
-path = '/home/lea/Dokumente/FSU/Anwendungspraktikum/Videos/GoPro/GoProFrames'
-coords = []
-with open('/home/lea/Dokumente/FSU/Anwendungspraktikum/points.txt', 'r') as f:
-	for row in f:
-		for coord in row.split('; '):
-			x,y = coord[1:-1].split(', ')
-			coords.append([int(x), int(y)])
+#path = '/home/lea/Dokumente/FSU/Anwendungspraktikum/Videos/GoPro/GoProFrames'
+#coords = []
+#with open('/home/lea/Dokumente/FSU/Anwendungspraktikum/points.txt', 'r') as f:
+#	for row in f:
+#		for coord in row.split('; '):
+#			x,y = coord[1:-1].split(', ')
+#			coords.append([int(x), int(y)])
 
-coords = np.array(coords)
+#coords = np.array(coords)
 
-f = 18
-plt.plot(coords[:f,0], coords[:f,1], 'r.')
-plt.scatter(coords[f:,0], coords[f:,1])
-plt.gca().invert_yaxis()
-plt.show()
+#f = 18
+#plt.plot(coords[:f,0], coords[:f,1], 'r.')
+#plt.scatter(coords[f:,0], coords[f:,1])
+#plt.gca().invert_yaxis()
+#plt.show()
 
 # Dimension of tennis court in meter
 # S: Single, d: Double
@@ -27,7 +27,7 @@ DSide = 10.97
 ServNet = 6.40
 BaseNet = 11.89
 
-# Radiale Verzerrung GoPro
+# Radiale Verzerrung GoPro - parameters not working, own calibration necessary
 # http://argus.web.unc.edu/camera-calibration-database/
 F = 1788
 W = 2704
@@ -42,7 +42,7 @@ k2 = 0.081 #0.0770
 #plt.imshow(image)
 #plt.show()
 KP = np.array([])
-with open('/home/lea/Dokumente/FSU/Anwendungspraktikum/Kalibrierung.txt') as f:
+with open('Kalibrierung.txt') as f:
 	for row in f:
 		img, real = row.split(';')
 		img = [int(x) for x in img.split(',')] 
@@ -97,7 +97,7 @@ def calibration(m):
 
 	#Since Rotation matrix not orthogonal because of noise perform SVD
 	U,D,V = np.linalg.svd(R)
-	R = U@ np.diag(np.ones(len(D)))@V
+	R = U @ np.diag(np.ones(len(D)))@V
 
 	return R,t_x,t_y
 
