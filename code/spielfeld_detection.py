@@ -50,25 +50,36 @@ near_center_service = (x0+216, y0+720)
 near_right_outer_service = (x0+total_width, y0+720)
 near_center = (x0+216, y0+total_len)
 
+
+center_left = (x0-36,936//2)
+center_right = (x0+total_width+36, 936//2)
+
+left_net_post = (x0-36,936//2,42)
+right_net_post = (total_width+36,936//2,42)
+
 court_points = np.array([[x[0],x[1],1] for x in [far_left,far_left_single,far_right_single,far_right,
 near_left,near_left_single,near_right_single,near_right,
 far_left_service,far_right_service,far_center_service,
-near_left_service,near_right_service,near_center_service]])
-
+near_left_service,near_right_service,near_center_service, center_left, center_right]])
 
 #cap = cv2.VideoCapture('/home/mace/Downloads/kai1.mp4')
 cap = cv2.VideoCapture('/home/mace/Documents/Python/old_tennis/tennis_top_cat_mouse.mp4')
 cv2.namedWindow('frame' )
 cv2.moveWindow('frame', 2000, 100)
-cv2.namedWindow('frame2' )
-cv2.moveWindow('frame2', 200, 100)
+cv2.namedWindow('threshold' )
+cv2.moveWindow('threshold', 200, 100)
+cv2.namedWindow('edges')
+cv2.moveWindow('edges', 200,600)
+# cv2.namedWindow('post detect')
+# cv2.moveWindow('post detect', 200,600)
 
 white_pixels_last_frame = [0]*10
 h_last_frame = None
 warp_lines = None
 count = -1
 
-for _ in range(100):
+for _ in range(25):
+    count += 1
     cap.read()
 
 
@@ -88,6 +99,68 @@ while cap.isOpened():
     th, dst = cv2.threshold(gray, thres, 255, cv2.THRESH_BINARY)
     gray_threshold = cv2.bitwise_and(gray, gray, mask = dst)
 
+    if h_last_frame is not None:
+        ##calculate net position
+        xpost, ypost = warp_lines[-1][0]
+        print(xpost,ypost)
+        if xpost <= 0 or xpost>frame.shape[1]*.8 or ypost <= 0 or ypost>frame.shape[0]*.8:
+            pass
+        else:
+            post_area = gray[ypost-frame.shape[0]//5:ypost+frame.shape[0]//10,xpost-frame.shape[1]//20:xpost+frame.shape[1]//20]
+            if post_area is not None and all(post_area.shape)>0:
+                post_area = cv2.GaussianBlur(post_area, (5,5), 0)
+                post_edges = cv2.Canny(post_area,50,100)
+                post_lines = cv2.HoughLines(post_edges,1,np.pi/360.0,25, None,0,0)
+
+                ##show halfway line
+                if post_lines is not None:
+                    print(f'lines found: {len(post_lines)}')
+                    groups_post = [[],[]]
+                    num_ints_post = 0
+                    ints_post = []
+                    for ph in post_lines:
+                        # cv2.line(post_area, tuple(line[:2]), tuple(line[2:]), (255,), 10)
+                        rho,theta = ph[0]
+                        # a_ = np.cos(theta)
+                        # b_ = np.sin(theta)
+                        # x0 = a_*rho
+                        # y0 = b_*rho
+                        # x1 = int(x0 + 2000*(-b_))
+                        # y1 = int(y0 + 2000*(a_))
+                        # x2 = int(x0 - 2000*(-b_))
+                        # y2 = int(y0 - 2000*(a_))
+                        if (theta > 1.53 and theta < 1.58):
+                            # cv2.line(post_area,(x1,y1),(x2,y2),(0,0,255),5, cv2.LINE_AA)
+                            groups_post[1].append(ph[0])
+                        elif False or theta < .1:
+                            # cv2.line(post_area,(x1,y1),(x2,y2),(0,0,255),5, cv2.LINE_AA)
+                            groups_post[0].append(ph[0])
+
+                    for a in groups_post[0]:
+                        for b in groups_post[1]:
+                            num_ints_post +=1
+                            c = np.linalg.solve([[cos(a[1]), sin(a[1])],[cos(b[1]), sin(b[1])]], [a[0], b[0]])
+                            ints_post.append(c)
+                            # cv2.circle(frame, tuple([int(x) for x in c]), 15, (255,255,0), 15, -1)
+
+                    if len(ints_post) >= 2:
+                        print('clustering...')
+                        kmeans = KMeans(2).fit(ints_post)
+                        centers_post = []
+                        for c in kmeans.cluster_centers_:
+                            cv2.circle(post_area, tuple([int(x) for x in c]), 15, (255,255,0), 5,-1)
+                            centers_post.append(c)
+
+                        if abs(centers_post[1][1]-centers_post[0][1])<10:
+                            cv2.circle(frame, (xpost-frame.shape[1]//20+int(centers_post[0][0]), ypost-frame.shape[0]//5+int((centers_post[0][1]+centers_post[1][1])//2)), 10, (255,0,255), 3,-1)
+                        elif centers_post[1][1] < centers_post[0][1]:
+                            cv2.circle(frame, (xpost-frame.shape[1]//20+int(centers_post[1][0]), ypost-frame.shape[0]//5+int(centers_post[1][1])), 10, (255,0,255), 3,-1)
+                        else:
+                            cv2.circle(frame, (xpost-frame.shape[1]//20+int(centers_post[0][0]), ypost-frame.shape[0]//5+int(centers_post[0][1])), 10, (255,0,255), 3,-1)
+
+                # cv2.imshow('post detect', post_area)
+                # cv2.imshow('post edges', post_edges)
+
     if (warp_lines is not None) and (white_pixels_last_frame[(count-1)%10] > 2e3):
         warp = np.zeros(frame.shape[:2], dtype='uint8')
         for l in warp_lines:
@@ -100,7 +173,6 @@ while cap.isOpened():
             h_best = h_last_frame
             white_pixels_old = white_pixels
 
-
     #detect lines
     edges = cv2.Canny(gray_threshold, 50, 200)
     lines = cv2.HoughLines(edges, 1, np.pi/360.0, 75, np.array([]), 0, 0)
@@ -108,7 +180,7 @@ while cap.isOpened():
 
     #delta_rho
     drho = 15
-    #delta_theta
+    #delta_thetagroups
     dtheta = .02
 
     num_ints = 0
@@ -305,7 +377,8 @@ while cap.isOpened():
             [points_new[2], points_new[6]], #left single sideline
             [points_new[8], points_new[9]], #far service line
             [points_new[11], points_new[12]], #near service line
-            [points_new[10], points_new[13]]  #center service line
+            [points_new[10], points_new[13]],  #center service line
+            [points_new[14], points_new[15]]   #halfway line
             ]
     if warp_lines is not None:
         for l in warp_lines:
@@ -322,9 +395,13 @@ while cap.isOpened():
         for c in [lower_left, lower_right]:
             cv2.circle(frame, tuple([int(x) for x in c]), 15, (255,0,0), -1)
 
+    if points_new is not None:
+        cv2.rectangle(frame, (points_new[14][0]-frame.shape[1]//20,points_new[14][1]-frame.shape[0]//5), (points_new[14][0]+frame.shape[1]//20,points_new[14][1]+frame.shape[0]//10), (255,0,255), 5 )
+
     cv2.putText(frame, f'Intersections: {len(ints)}/{num_ints}', (10,20), cv2.FONT_HERSHEY_SIMPLEX, .7, (0,0,255), 2)
+    cv2.putText(frame, f'frame: {count}', (10,40), cv2.FONT_HERSHEY_SIMPLEX, .7, (0,255,255), 2)
     cv2.imshow('frame',frame)
-    cv2.imshow('frame2', gray_threshold)
+    cv2.imshow('threshold', gray_threshold)
     cv2.imshow('edges', edges)
     if cv2.waitKey(15) & 0xFF==ord('q'):
         break
