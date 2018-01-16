@@ -63,7 +63,7 @@ far_left_service,far_right_service,far_center_service,
 near_left_service,near_right_service,near_center_service, center_left, center_right]])
 
 #cap = cv2.VideoCapture('/home/mace/Downloads/kai1.mp4')
-cap = cv2.VideoCapture('/home/mace/Documents/Python/old_tennis/tennis_top_cat_mouse.mp4')
+cap = cv2.VideoCapture('/home/mace/Downloads/kai1.mp4')
 cv2.namedWindow('frame' )
 cv2.moveWindow('frame', 2000, 100)
 cv2.namedWindow('threshold' )
