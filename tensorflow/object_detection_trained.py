@@ -26,12 +26,13 @@ from object_detection.utils import visualization_utils as vis_util
 # DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 
 # Path to frozen detection graph. This is the actual model that is used for the object detection.
-PATH_TO_CKPT = 'MODEL_NAME + '/frozen_inference_graph.pb'
+PATH_TO_MODEL = 'models/trainingGoPro_inference_graph'
+PATH_TO_CKPT = PATH_TO_MODEL + '/frozen_inference_graph.pb'
 
 # List of the strings that is used to add correct label for each box.
 PATH_TO_LABELS = "data/ball_label_map.pbtxt"
 
-NUM_CLASSES = 1
+NUM_CLASSES = 4
 
 ########Loading the modelSSES, use_display_name=True)
 
@@ -48,10 +49,10 @@ label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
 categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
 category_index = label_map_util.create_category_index(categories)
 
-
+cv2.namedWindow('frame')
 ## TODO: path einfuegen
-cap = cv2.VideoCapture({TODO: Path to video})
-
+cap = cv2.VideoCapture(sys.argv[1])
+ret0, image_np0 = cap.read()
 IMAGE_SIZE = (12, 8)
 
 with detection_graph.as_default():
@@ -68,7 +69,8 @@ with detection_graph.as_default():
         detection_scores = detection_graph.get_tensor_by_name('detection_scores:0')
         detection_classes = detection_graph.get_tensor_by_name('detection_classes:0')
         num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-        ret,image_np = cap.read()
+        ret1,image_np1 = cap.read()
+        image_np = cv2.absdiff(image_np1, image_np0)
         image_np_expanded = np.expand_dims(image_np, axis=0)
         # Actual detection.
         (boxes, scores, classes, num) = sess.run(
@@ -84,12 +86,10 @@ with detection_graph.as_default():
           use_normalized_coordinates=True,
           line_thickness=8)
 
-
-
-
         cv2.imshow('frame', image_np)
         if cv2.waitKey(24) & 0xFF==ord('q'):
             break
+        image_np0 = image_np1
 
 cap.release()
 cv2.destroyAllWindows()

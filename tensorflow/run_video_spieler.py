@@ -1,3 +1,4 @@
+from PyQt5 import QtCore, QtGui, QtWidgets
 import numpy as np
 import os
 import six.moves.urllib as urllib
@@ -32,15 +33,21 @@ PATH_TO_TEST_IMAGES_DIR = sys.argv[1]
 # What model to download.
 MODEL_DIR = '/home/mueller/code/python/Anwendungspraktikum/cvtennis/tensorflow/models/'
 MODEL_NAME = 'GoProSpielerGraph'
+LABEL_MAP = 'spieler_label_map.pbtxt'
+NUM_CLASSES = 2
+
+#For Ball
+if sys.argv[2] == 'Ball':
+	MODEL_NAME = 'GoProBall1742Graph'
+	LABEL_MAP = 'ball_label_map.pbtxt'
+	NUM_CLASSES = 1
 
 # Path to frozen detection graph. This is the actual model that is used for the object detection.
 PATH_TO_CKPT = MODEL_DIR + MODEL_NAME + '/frozen_inference_graph.pb'
 
 # List of the strings that is used to add correct label for each box.
-PATH_TO_LABELS = os.path.join('data', 'spieler_label_map.pbtxt')
+PATH_TO_LABELS = os.path.join('data', LABEL_MAP)
 print(PATH_TO_CKPT, PATH_TO_LABELS)
-
-NUM_CLASSES = 2
 
 detection_graph = tf.Graph()
 with detection_graph.as_default():
@@ -60,14 +67,16 @@ def load_image_into_numpy_array(image):
 
 # Get Video
 #TEST_IMAGE_PATHS = [ os.path.join(PATH_TO_TEST_IMAGES_DIR, 'image_GP_{:05}.png'.format(i)) for i in range(0, 3400) ]
-TEST_IMAGE_PATHS = glob.glob(os.path.join(PATH_TO_TEST_IMAGES_DIR, '*.png'))
+TEST_IMAGE_PATHS = sorted(glob.glob(os.path.join(PATH_TO_TEST_IMAGES_DIR, '*.png')))
 
 # Size, in inches, of the output images.
 IMAGE_SIZE = (8, 6)
 
+writefile = open('/home/mueller/code/python/Anwendungspraktikum/cvtennis/positionsball.csv', 'a')
+
 #cv2.startWindowThread()
-cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
-cv2.resizeWindow('frame', 800, 800)
+#cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
+#cv2.resizeWindow('frame', 800, 800)
 with detection_graph.as_default():
 	with tf.Session(graph=detection_graph) as sess:
 		# Definite input and output Tensors for detection_graph
@@ -79,13 +88,13 @@ with detection_graph.as_default():
 		detection_scores = detection_graph.get_tensor_by_name('detection_scores:0')
 		detection_classes = detection_graph.get_tensor_by_name('detection_classes:0')
 		num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-		plt.figure(figsize=IMAGE_SIZE)
-		for i in range(1100, 1200):
-			print(i)
+		#plt.figure(figsize=IMAGE_SIZE)
+		for i in range(0,len(TEST_IMAGE_PATHS),1):
 			image_path1 = TEST_IMAGE_PATHS[i] #1-2
-			image_path2 = TEST_IMAGE_PATHS[i-1]
+			print(i, image_path1)
+			#image_path2 = TEST_IMAGE_PATHS[i-1]
 			image1 = cv2.imread(image_path1)
-			image2 = cv2.imread(image_path2)
+			#image2 = cv2.imread(image_path2)
 			image = Image.open(image_path1)
 			# the array based representation of the image will be used later in order to prepare the
 			# result image with boxes and labels on it.
@@ -108,11 +117,17 @@ with detection_graph.as_default():
 					category_index,
 					use_normalized_coordinates=True,
 					line_thickness=8)
-			
-			cv2.imshow('frame', image_np)
-			if cv2.waitKey(24) & 0xFF==ord('q'):
-				break
 
+			#plt.imshow(image_np)
+			#plt.pause(.001)
+			#plt.draw()
 
+			writestr = '{};[{} {} {} {} {}];{};{};{}'.format(image_path1, boxes[0][0],boxes[0][1], boxes[0][2], 
+				boxes[0][3], boxes[0][4], scores[0][0:5], classes[0][0:5], num)
+			writefile.write(writestr)
+			#if cv2.waitKey(24) & 0xFF==ord('q'):
+		#		break
+
+writefile.close()
 			#plt.imshow(image_np)
 			#plt.show()

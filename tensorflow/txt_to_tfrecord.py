@@ -40,7 +40,7 @@ def create_tf_example(path, imgname, label, xmin, ymin, xmax, ymax):
 	# (1 per box)
 	classes_text = [str(label).encode('utf8')] # List of string class name of bounding box (1 per box)
 	
-	items = {'Ball': 1, 'Spieler': 2}
+	items = {'Ball': 1}
 	classes = [int(items[str(label)])] # List of integer class id of bounding box (1 per box)
 
 	tf_example = tf.train.Example(features=tf.train.Features(feature={

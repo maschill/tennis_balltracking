@@ -11,6 +11,7 @@ This README would normally document whatever steps are necessary to get your app
 	Rename model.ckpt.data-00000-of-00001 to model.ckpt
 *	Change paths in tensorflow/model.config file
 *	go to models/research/object_detection and run train.py
+	
 
 ### What is this repository for? ###
 
