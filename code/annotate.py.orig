@@ -25,10 +25,15 @@ name of image that will be saved
 classes = {ord('f'): 'Ball', ord('d'): 'Spieler', ord('t'): 'Aufschlag', ord('v'): 'Tennisschlaeger'}
 step = 15
 path = '../../Videos/GoPro/GoProFrames/'
+<<<<<<< HEAD
+outpath = '../annotations/'
+writefile = 'GoProAnnotationSpielerBall_test.txt'
+=======
 outfile = '../annotations/GoProAnnotationSpieler_test.txt'
 imggroup = 'image_GP_'
 imgtype = '.png'
 digits = '05'
+>>>>>>> f0f0356e6676f9feadd182fe7a2af06fdfd138ef
 
 # from: https://stackoverflow.com/questions/28327020/opencv-detect-mouse-position-clicking-over-a-picture
 def draw_rectangle(event,x,y,flags,param):
