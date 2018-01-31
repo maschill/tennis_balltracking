@@ -4,8 +4,11 @@ from math import atan2, degrees, sin, cos
 import random
 import itertools
 import copy
+import sys
+
 from sklearn.cluster import KMeans
 from scipy.special import comb
+
 
 def ptransform(points, h):
     points_new = []
@@ -62,8 +65,19 @@ near_left,near_left_single,near_right_single,near_right,
 far_left_service,far_right_service,far_center_service,
 near_left_service,near_right_service,near_center_service, center_left, center_right]])
 
-#cap = cv2.VideoCapture('/home/mace/Downloads/kai1.mp4')
-cap = cv2.VideoCapture('/home/mace/Downloads/kai1.mp4')
+cap = None
+if len(sys.argv) <2:
+    print('Usage: python spielfeld_detection.py <videofile>')
+    quit()
+else:
+    try:
+        cap=cv2.VideoCapture(sys.argv[1])
+        ret,frame = cap.read()
+    except:
+        print('Usage: python spielfeld_detection.py <videofile>')
+        cap.close()
+        quit()
+
 cv2.namedWindow('frame' )
 cv2.moveWindow('frame', 2000, 100)
 cv2.namedWindow('threshold' )
