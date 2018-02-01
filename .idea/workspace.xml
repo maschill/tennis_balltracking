@@ -5,7 +5,7 @@
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/positionsball.csv" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/annotations/GoProDiffAnnotation_train.txt" afterPath="$PROJECT_DIR$/annotations/GoProDiffAnnotation_train.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/code/Kalibrierung.txt" afterPath="$PROJECT_DIR$/code/Kalibrierung.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/code/Calibration.ipynb" afterPath="$PROJECT_DIR$/code/Calibration.ipynb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/code/annotate.py" afterPath="$PROJECT_DIR$/code/annotate.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/code/check_labels.py" afterPath="$PROJECT_DIR$/code/check_labels.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/code/diffbild.py" afterPath="$PROJECT_DIR$/code/diffbild.py" />
@@ -62,21 +62,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Calibration.ipynb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Calibration.ipynb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/code/Calibration.ipynb">
           <provider selected="true" editor-type-id="ipnb-editor">
             <state>
               <selected id="6" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Kalibrierung.txt" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/code/Kalibrierung.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="17" column="17" lean-forward="false" selection-start-line="17" selection-start-column="17" selection-end-line="17" selection-end-column="17" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -128,8 +118,8 @@
         <option value="$PROJECT_DIR$/tensorflow/txt_to_tfrecord_multiclass.py" />
         <option value="$PROJECT_DIR$/code/check_labels.py" />
         <option value="$PROJECT_DIR$/code/plotballpos.py" />
-        <option value="$PROJECT_DIR$/code/Calibration.ipynb" />
         <option value="$PROJECT_DIR$/code/Kalibrierung.txt" />
+        <option value="$PROJECT_DIR$/code/Calibration.ipynb" />
       </list>
     </option>
   </component>
@@ -430,18 +420,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/Calibration.ipynb">
-      <provider selected="true" editor-type-id="ipnb-editor">
-        <state>
-          <selected id="6" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/code/Kalibrierung.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="255">
           <caret line="17" column="17" lean-forward="false" selection-start-line="17" selection-start-column="17" selection-end-line="17" selection-end-column="17" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/Calibration.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="6" />
         </state>
       </provider>
     </entry>

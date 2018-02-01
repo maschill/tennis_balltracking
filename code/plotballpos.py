@@ -13,8 +13,8 @@ with open(file) as f:
 cv2.namedWindow('image', cv2.WINDOW_NORMAL)
 cv2.resizeWindow('image', 800, 800)
 
-for i in range(9200, 12000):
-	print(i, row)
+for i in range(4757, 30790):
+	print(i, row, end=" ", flush=True)
 	row = data[i]
 	row = row.replace('    ', ' ')
 	row = row.replace('   ', ' ')
@@ -24,8 +24,10 @@ for i in range(9200, 12000):
 	b1, b2, b3, b4 = [x.strip('[]') for x in bb.split(' ')[0:4]]
 	b1, b3 = float(b1) * image.shape[0], float(b3) * image.shape[0]
 	b2, b4 = float(b2) * image.shape[1], float(b4) * image.shape[1]
-	if float(ac.split(' ')[0].strip('[]')) > 0.3:
+	if float(ac.split(' ')[0].strip('[]')) > 0.05:
 		cv2.rectangle(image, (int(b2), int(b1)), (int(b4), int(b3)), (0, 0, 255), 1)
+	if float(ac.split(' ')[0].strip('[]')) > 0.5:
+		cv2.rectangle(image, (int(b2), int(b1)), (int(b4), int(b3)), (0, 255, 0), 1)
 	cv2.imshow('image', image)
 	if cv2.waitKey(2) & 0xFF == ord('q'):
 		break
