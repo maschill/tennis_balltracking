@@ -4,8 +4,11 @@ from math import atan2, degrees, sin, cos
 import random
 import itertools
 import copy
+import sys
+
 from sklearn.cluster import KMeans
 from scipy.special import comb
+
 
 def ptransform(points, h):
     points_new = []
@@ -18,7 +21,7 @@ def ptransform(points, h):
 
     return points_new
 
-#define tennis field
+#define tennis fieldnewcameramtx
 x0 = 25
 y0 = 25
 
@@ -62,14 +65,27 @@ near_left,near_left_single,near_right_single,near_right,
 far_left_service,far_right_service,far_center_service,
 near_left_service,near_right_service,near_center_service, center_left, center_right]])
 
-#cap = cv2.VideoCapture('/home/mace/Downloads/kai1.mp4')
-cap = cv2.VideoCapture('/home/mace/Documents/Python/old_tennis/tennis_top_cat_mouse.mp4')
+cap = None
+no_out = True
+if len(sys.argv) <2:
+    print('Usage: python spielfeld_detection.py <videofile>')
+    quit()
+else:
+    try:
+        if len(sys.argv) > 2 and sys.argv[-2]=='--no-print':
+            no_out = False
+        cap=cv2.VideoCapture(sys.argv[-1])
+        ret,frame = cap.read()
+    except:
+        print('Usage: python spielfeld_detection.py <videofile>')
+        quit()
+
 cv2.namedWindow('frame' )
 cv2.moveWindow('frame', 2000, 100)
-cv2.namedWindow('threshold' )
-cv2.moveWindow('threshold', 200, 100)
-cv2.namedWindow('edges')
-cv2.moveWindow('edges', 200,600)
+# cv2.namedWindow('threshold' )
+# cv2.moveWindow('threshold', 200, 100)
+# cv2.namedWindow('edges')
+# cv2.moveWindow('edges', 200,600)
 # cv2.namedWindow('post detect')
 # cv2.moveWindow('post detect', 200,600)
 
@@ -82,7 +98,18 @@ for _ in range(25):
     count += 1
     cap.read()
 
+# hardcoded camera parameters
+mtx = np.array([[  1.41344535e+03,   0.00000000e+00,   1.00046596e+03],
+       [  0.00000000e+00,   9.89238584e+02,   7.55547410e+02],
+       [  0.00000000e+00,   0.00000000e+00,   1.00000000e+00]])
 
+dist = np.array([-0.38853304,  0.5684817 , -0.04076484,  0.00407608, -0.29646849])
+
+newcameramatrix = np.array([[  1.18645984e+03,   0.00000000e+00,   1.04425197e+03],
+       [  0.00000000e+00,   8.33507690e+02,   7.25931636e+02],
+       [  0.00000000e+00,   0.00000000e+00,   1.00000000e+00]])
+
+est = True
 while cap.isOpened():
     count += 1
     best_combo = None
@@ -90,6 +117,11 @@ while cap.isOpened():
     h_best = None
 
     ret, frame = cap.read()
+
+
+    frame = cv2.undistort(frame, mtx, dist, None, newcameramatrix)
+
+
     #preprocessing
     frame = cv2.resize(frame, (980,560))
     # frame = cv2.GaussianBlur(frame, (1,3), 0)
@@ -102,7 +134,8 @@ while cap.isOpened():
     if h_last_frame is not None:
         ##calculate net position
         xpost, ypost = warp_lines[-1][0]
-        print(xpost,ypost)
+        if no_out:
+            print(xpost,ypost)
         if xpost <= 0 or xpost>frame.shape[1]*.8 or ypost <= 0 or ypost>frame.shape[0]*.8:
             pass
         else:
@@ -114,7 +147,8 @@ while cap.isOpened():
 
                 ##show halfway line
                 if post_lines is not None:
-                    print(f'lines found: {len(post_lines)}')
+                    if no_out:
+                        print(f'lines found: {len(post_lines)}')
                     groups_post = [[],[]]
                     num_ints_post = 0
                     ints_post = []
@@ -144,7 +178,8 @@ while cap.isOpened():
                             # cv2.circle(frame, tuple([int(x) for x in c]), 15, (255,255,0), 15, -1)
 
                     if len(ints_post) >= 2:
-                        print('clustering...')
+                        if no_out:
+                            print('clustering...')
                         kmeans = KMeans(2).fit(ints_post)
                         centers_post = []
                         for c in kmeans.cluster_centers_:
@@ -161,14 +196,15 @@ while cap.isOpened():
                 # cv2.imshow('post detect', post_area)
                 # cv2.imshow('post edges', post_edges)
 
-    if (warp_lines is not None) and (white_pixels_last_frame[(count-1)%10] > 2e3):
+    if (warp_lines is not None) and (white_pixels_last_frame[(count-1)%10] > 2e3) and est:
         warp = np.zeros(frame.shape[:2], dtype='uint8')
         for l in warp_lines:
             cv2.line(warp, l[0], l[1], (255), 5)
 
         white_pixels = np.sum(cv2.threshold(cv2.bitwise_and(edges,edges, mask=dst), thres,1, cv2.THRESH_BINARY)[1])
         wpthres = np.mean(white_pixels_last_frame[(count-1)%10])*.975
-        print(f'white_pixels: {white_pixels} of {wpthres}')
+        if no_out:
+            print(f'white_pixels: {white_pixels} of {wpthres}')
         if white_pixels > wpthres:
             h_best = h_last_frame
             white_pixels_old = white_pixels
@@ -186,7 +222,7 @@ while cap.isOpened():
     num_ints = 0
     num_clusters = 12
 
-    if not lines is None and h_best is None:
+    if not lines is None and h_best is None and est:
         for ph in lines:
             rho,theta = ph[0]
             # a_ = np.cos(theta)
@@ -248,8 +284,9 @@ while cap.isOpened():
     used = None
     epsilon = 500
     done_loops = 0
-    iters = int(comb(num_clusters,4)*.3)+1
-    if h_best is None and len(centers) > 3:
+    iters = int(comb(num_clusters,4)*.9)+1
+    if h_best is None and len(centers) > 3 and est:
+        est = False
         for _ in range(iters):
             corners = centers[np.random.choice(centers.shape[0],4,replace=False)]
             if np.linalg.det(np.hstack((corners[:3],[[1],[1],[1]]))) < epsilon:
@@ -387,8 +424,9 @@ while cap.isOpened():
     cv2.line(frame, (int(half_width),0), (int(half_width),2000), (0,0,0), 3)
     cv2.line(frame, (0,int(heigh_const)), (2000, int(heigh_const)), (0,0,0), 3)
 
-    print(white_pixels_last_frame)
-    print(f'found in {done_loops} loops {white_pixels_old} white pixels')
+    if no_out:
+        print(white_pixels_last_frame)
+        print(f'found in {done_loops} loops {white_pixels_old} white pixels')
     if used is not None:
         for c in [upper_left, upper_right]:
             cv2.circle(frame, tuple([int(x) for x in c]), 15, (0,0,255), -1)
@@ -401,8 +439,8 @@ while cap.isOpened():
     cv2.putText(frame, f'Intersections: {len(ints)}/{num_ints}', (10,20), cv2.FONT_HERSHEY_SIMPLEX, .7, (0,0,255), 2)
     cv2.putText(frame, f'frame: {count}', (10,40), cv2.FONT_HERSHEY_SIMPLEX, .7, (0,255,255), 2)
     cv2.imshow('frame',frame)
-    cv2.imshow('threshold', gray_threshold)
-    cv2.imshow('edges', edges)
+    # cv2.imshow('threshold', gray_threshold)
+    # cv2.imshow('edges', edges)
     if cv2.waitKey(15) & 0xFF==ord('q'):
         break
 
