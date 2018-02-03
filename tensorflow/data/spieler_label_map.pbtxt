@@ -1,0 +1,8 @@
+item {
+	id: 1
+	name: 'Spieler1'
+}
+item {
+	id: 2
+	name: 'Spieler2'
+}

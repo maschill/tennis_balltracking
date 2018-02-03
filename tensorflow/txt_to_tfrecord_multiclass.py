@@ -15,7 +15,7 @@ from object_detection.utils import dataset_util
 # Better use: https://docs.python.org/3.5/library/argparse.html
 flags = tf.app.flags
 flags.DEFINE_string('input_path', '', 'Path to input csv file from current directory')
-flags.DEFINE_string('output_path', '', 'Path to output TFRecord')
+flags.DEFINE_string('output_path', '', 'Path to output TFRecord from current directory')
 flags.DEFINE_string('image_folder', '', 'Folder with images')
 FLAGS = flags.FLAGS
 #???
@@ -40,8 +40,9 @@ def create_tf_example(path, imgname, label, xmin, ymin, xmax, ymax):
 	ymaxs = [ y / height for y in ymax] # List of normalized bottom y coordinates in bounding box
 	# (1 per box)
 	classes_text = [str(lab).encode('utf8') for lab in label] # List of string class name of bounding box (1 per box)
-	
-	items = {'Ball': 1, 'Spieler': 2, 'Tennisschlaeger':3, 'Aufschlag': 4}
+
+	#items = {'Spieler1': 1, 'Spieler2': 2}
+	items = {'Ball': 1}
 	classes = [int(items[str(x)]) for x in label] # List of integer class id of bounding box (1 per box)
 
 	tf_example = tf.train.Example(features=tf.train.Features(feature={
@@ -86,33 +87,30 @@ def main(_):
 		reader = csv.reader(imagelabels, delimiter=' ')
 		#for row in imagelabels:
 		for i in range(0, val):
-			#try:
-			print(i, val)
-			next_row = reader.__next__()
-			#next_imgname, next_label, next_xmin, next_ymin, next_xmax, next_ymax = row.split(' ')
-			
-			if current_image == next_row[0]:
-				 label_.append(next_row[1])
-				 xmin_.append(float(next_row[2]))
-				 ymin_.append(float(next_row[3]))
-				 xmax_.append(float(next_row[4]))
-				 ymax_.append(float(next_row[5]))
-			
-			else:
-				print('Start writing {} to file ..'.format(current_image))
-				tf_example = create_tf_example(FLAGS.image_folder, current_image, label_, 
-					xmin_, ymin_, xmax_, ymax_)
-				writer.write(tf_example.SerializeToString())
-				current_image = next_row[0]
-				label_, xmin_, ymin_, xmax_, ymax_ = [next_row[1]], [float(next_row[2])], [float(next_row[3])], [float(next_row[4])], [float(next_row[5])]
-			if i == val-1:
-				tf_example = create_tf_example(FLAGS.image_folder, current_image, label_, xmin_, ymin_, xmax_, ymax_)
-				writer.write(tf_example.SerializeToString())						
+			try:
+				print(i, val)
+				next_row = reader.__next__()
 
+				if current_image == next_row[0]:
+					label_.append(next_row[1])
+					xmin_.append(float(next_row[2]))
+					ymin_.append(float(next_row[3]))
+					xmax_.append(float(next_row[4]))
+					ymax_.append(float(next_row[5]))
 
-#				except ValueError:
-#					print('No ball in image {} found'.format(row.split()[0]), sys.exc_info()[0])
-#					pass
+				else:
+					print('Start writing {} to file ..'.format(current_image))
+					tf_example = create_tf_example(FLAGS.image_folder, current_image, label_,
+												   xmin_, ymin_, xmax_, ymax_)
+					writer.write(tf_example.SerializeToString())
+					current_image = next_row[0]
+					label_, xmin_, ymin_, xmax_, ymax_ = [next_row[1]], [float(next_row[2])], [float(next_row[3])], [float(next_row[4])], [float(next_row[5])]
+				if i == val-1:
+					tf_example = create_tf_example(FLAGS.image_folder, current_image, label_, xmin_, ymin_, xmax_, ymax_)
+					writer.write(tf_example.SerializeToString())
+			except ValueError:
+				print('No ball in image {} found'.format(row.split()[0]), sys.exc_info()[0])
+				pass
 	print('Done writing to file')
 	writer.close()
 

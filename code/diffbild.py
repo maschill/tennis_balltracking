@@ -7,17 +7,17 @@ import glob
 # Will be used for ball detection
 # path: folder containing frames
 
-path =  '/home/mueller/code/python/Anwendungspraktikum/Videos/GoPro/GoProFrames'
+path =  '/home/mueller/code/python/Anwendungspraktikum/Videos/GoPro/2_GoProFrames'
 imgtype = 'png'
-imgname = 'image_GP_'
+imgname = '2_image_GP_'
 digits = '05'
-outdir = '/home/mueller/code/python/Anwendungspraktikum/Videos/GoPro/GoProFramesDiff/'
+outdir = '/home/mueller/code/python/Anwendungspraktikum/Videos/GoPro/2_GoProFramesDiff/'
 
 files = sorted(glob.glob(path + '/*.' + imgtype))
 for i in range(1, len(files)):
 	diff = cv2.absdiff(cv2.imread(files[i]), cv2.imread(files[i-1]))
-	imgname = imgname + format(i, digits) + imgtype
-	cv2.imwrite(outdir + imgname, diff)
+	imgsave = imgname + format(i, digits) + '.' + imgtype
+	cv2.imwrite(outdir + imgsave, diff)
 
 '''
 path = os.getcwd() + '/../tennis_top_cat_mouse.mp4'

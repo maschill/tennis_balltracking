@@ -4,8 +4,11 @@
 tf_*
 ssd_*
 ssd_*/**
+/tensorflow*.config
 /tensorflow/data/*.record
 /tensorflow/models/faster_rcnn_resnet101_coco_2017_11_08/
 /tensorflow/models/ssd_inception_v2_coco_2017_11_17/
+/tensorflow/models/
 **/**.mp4
 /code/cutball.py
+/annotations
