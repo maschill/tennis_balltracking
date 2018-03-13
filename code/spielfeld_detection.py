@@ -81,7 +81,7 @@ else:
         quit()
 
 cv2.namedWindow('frame' )
-cv2.moveWindow('frame', 2000, 100)
+cv2.moveWindow('frame', 20, 100)
 # cv2.namedWindow('threshold' )
 # cv2.moveWindow('threshold', 200, 100)
 # cv2.namedWindow('edges')
@@ -148,7 +148,7 @@ while cap.isOpened():
                 ##show halfway line
                 if post_lines is not None:
                     if no_out:
-                        print(f'lines found: {len(post_lines)}')
+                        print('lines found: ',len(post_lines))
                     groups_post = [[],[]]
                     num_ints_post = 0
                     ints_post = []
@@ -204,7 +204,7 @@ while cap.isOpened():
         white_pixels = np.sum(cv2.threshold(cv2.bitwise_and(edges,edges, mask=dst), thres,1, cv2.THRESH_BINARY)[1])
         wpthres = np.mean(white_pixels_last_frame[(count-1)%10])*.975
         if no_out:
-            print(f'white_pixels: {white_pixels} of {wpthres}')
+            print('white_pixels: ',white_pixels,' of ',wpthres)
         if white_pixels > wpthres:
             h_best = h_last_frame
             white_pixels_old = white_pixels
@@ -426,7 +426,7 @@ while cap.isOpened():
 
     if no_out:
         print(white_pixels_last_frame)
-        print(f'found in {done_loops} loops {white_pixels_old} white pixels')
+        print('found in ', done_loops,' loops ', white_pixels_old,' white pixels')
     if used is not None:
         for c in [upper_left, upper_right]:
             cv2.circle(frame, tuple([int(x) for x in c]), 15, (0,0,255), -1)
@@ -436,8 +436,9 @@ while cap.isOpened():
     if points_new is not None:
         cv2.rectangle(frame, (points_new[14][0]-frame.shape[1]//20,points_new[14][1]-frame.shape[0]//5), (points_new[14][0]+frame.shape[1]//20,points_new[14][1]+frame.shape[0]//10), (255,0,255), 5 )
 
-    cv2.putText(frame, f'Intersections: {len(ints)}/{num_ints}', (10,20), cv2.FONT_HERSHEY_SIMPLEX, .7, (0,0,255), 2)
-    cv2.putText(frame, f'frame: {count}', (10,40), cv2.FONT_HERSHEY_SIMPLEX, .7, (0,255,255), 2)
+    if num_ints > 0:
+        cv2.putText(frame, 'Intersections: '+str(len(ints)/num_ints), (10,20), cv2.FONT_HERSHEY_SIMPLEX, .7, (0,0,255), 2)
+    cv2.putText(frame, 'frame: '+str(count), (10,40), cv2.FONT_HERSHEY_SIMPLEX, .7, (0,255,255), 2)
     cv2.imshow('frame',frame)
     # cv2.imshow('threshold', gray_threshold)
     # cv2.imshow('edges', edges)
