@@ -58,10 +58,10 @@ def draw():
 
 endprogram = False
 inprogress = True
-ftrain = open(outfile, 'a')
+#ftrain = open(outfile, 'a')
 testfile = outfile.split('_')[0] + '_test.txt'
 print(testfile)
-ftest = open(testfile, 'a')
+#ftest = open(testfile, 'a')
 
 if len(sys.argv) > 2:
     a = int(sys.argv[1])
@@ -128,14 +128,15 @@ while i < b:
 
         # if no ball on image click s next will come up
         if key == ord('s'):
-            for ano in annotations:
-                if np.random.uniform(0,1) <= 0.85:
-                    print(ano, 'train')
-                    ftrain.write(str(ano))
-                else:
-                    print(ano, 'test')
-                    ftest.write(str(ano))
+            #for ano in annotations:
+            #    if np.random.uniform(0,1) <= 0.85:
+            #        print(ano, 'train')
+            #        ftrain.write(str(ano))
+            #    else:
+            #        print(ano, 'test')
+            #        ftest.write(str(ano))
                     #print("{} {} {} {} {} {}\n".format(imgname, classes[key], mouseXs, mouseYs, mouseXe, mouseYe))
+            print(str(ano))
             inprogress = False
         # stop cropping and save cropped eges to file
         elif key == ord('q'):
@@ -150,5 +151,5 @@ while i < b:
             i += 100
             inprogress = False
 
-ftrain.close()
-ftest.close()
+#ftrain.close()
+#ftest.close()

@@ -12,3 +12,9 @@ ssd_*/**
 **/**.mp4
 /code/cutball.py
 /annotations
+/code/.BallAnimation.ipynb.swp
+/code/__pycache__/
+/.idea/cvtennis.iml
+/.idea/misc.xml
+/.idea/workspace.xml
+.Rhistory
