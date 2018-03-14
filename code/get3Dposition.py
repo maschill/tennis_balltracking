@@ -1,111 +1,143 @@
 from matplotlib import pyplot as plt
 import numpy as np
+import os
+import cv2
+import argparse
+from sympy import Point, Point3D, Line, Line3D, Plane
+
+import calibration
+
 '''
 From 3D position and estimated court edges 3D position of players and ball will be calculated
 '''
-#path = '/home/lea/Dokumente/FSU/Anwendungspraktikum/Videos/GoPro/GoProFrames'
-#coords = []
-#with open('/home/lea/Dokumente/FSU/Anwendungspraktikum/points.txt', 'r') as f:
-#	for row in f:
-#		for coord in row.split('; '):
-#			x,y = coord[1:-1].split(', ')
-#			coords.append([int(x), int(y)])
 
-#coords = np.array(coords)
+def get_3D_position(imgpoint=[280, 825], objpoint={'X': None, 'Y': None, 'Z': 0}, R=R, M=M, T=T, F=F, point=True):
+	if objpoint['X'] == None and objpoint['Y'] == None and objpoint['Z'] == None:
+		print('Ray will be returned')
+	elif len([x for x in objpoint if objpoint[x] != None]) == 1:
+		if point:
+			print('Return 3D Point for given 3D value')
+			key = [x for x in objpoint if objpoint[x] != None][0]
+			# Dict for vector position
+			vti = {'X': 0, 'Y': 1, 'Z': 2}
+			camerapt = np.linalg.inv(M) @ np.array([imgpoint[0], imgpoint[1], 1])
+			rt = (np.transpose(R) @ T)
+			a = objpoint[key] + rt[vti[key]]
+			b = (np.transpose(R) @ camerapt)[vti[key]]
+			s = a / b
+			r = F @ np.append(camerapt * s, 1)
+			return r
+		else:
+			print('Return two 3D points which define line in 3D, Z=0 for p1')
+			key = [x for x in objpoint if objpoint[x] != None][0]
+			# Dict for vector position
+			vti = {'X': 0, 'Y': 1, 'Z': 2}
+			camerapt = np.linalg.inv(M) @ np.array([imgpoint[0], imgpoint[1], 1])
+			rt = (np.transpose(R) @ T)
+			a = objpoint[key] + rt[vti[key]]
+			b = (np.transpose(R) @ camerapt)[vti[key]]
+			s = a / b
+			r1 = F @ np.append(camerapt * s, 1)
 
-#f = 18
-#plt.plot(coords[:f,0], coords[:f,1], 'r.')
-#plt.scatter(coords[f:,0], coords[f:,1])
-#plt.gca().invert_yaxis()
-#plt.show()
+			s = 20
+			r2 = F @ np.append(camerapt * s, 1)
+			return r1, r2
+	else:
+		print('Only one value of 3D Point can be set. Other two values must be None')
 
-# Dimension of tennis court in meter
-# S: Single, d: Double
+def transform_params(R=R, T=T):
+	R = cv2.Rodrigues(R[0])[0]
+	T = T[0].reshape(-1, 3)[0]
+	F = np.zeros((3, 4))
+	F[:, :-1] = np.transpose(R)
+	F[:, -1] = -np.transpose(R) @ T
+	return R,T,F
 
-SSide = 8.23 # Distance between single sideline
-DSide = 10.97
-ServNet = 6.40
-BaseNet = 11.89
 
-# Radiale Verzerrung GoPro - parameters not working, own calibration necessary
-# http://argus.web.unc.edu/camera-calibration-database/
-F = 1788
-W = 2704
-H = 1520
-cx = 1351.5
-cy = 759.5
-k1 = -0.2583
-k2 = 0.081 #0.0770
+def get_trajectory(tr2d):
+	start_im = tr2d[0][1:3]
+	end_im = tr2d[-1][1:3]
+	start_3D = get_3D_position(imgpoint=start_im, objpoint={'X': None, 'Y': None, 'Z': 1}, point=True)
+	end_3D = get_3D_position(imgpoint=end_im, objpoint={'X': None, 'Y': None, 'Z': 0}, point=True)
+	print(start_3D, end_3D)
+	# Get plane
+	X_ws, Y_ws, Z_ws = start_3D[0], start_3D[1], start_3D[2]
+	X_we, Y_we, Z_we = end_3D[0], end_3D[1], end_3D[2]
+	start = np.array([X_ws, Y_ws, 0])
+	ende = np.array([X_we, Y_we, Z_we])
+	rvec = ende - start
+	nv = np.cross((rvec), [0, 0, 1])
+	plane = Plane(Point3D(X_ws, Y_ws, Z_ws), normal_vector=(nv[0], nv[1], nv[2]))
 
-#path = '/home/lea/Dokumente/FSU/Anwendungspraktikum/Videos/GoPro/GoProFrames'
-#image = plt.imread(path + '/image_GP_00001.png')
-#plt.imshow(image)
-#plt.show()
-KP = np.array([])
-with open('Kalibrierung.txt') as f:
-	for row in f:
-		img, real = row.split(';')
-		img = [int(x) for x in img.split(',')] 
-		real = [int(x) for x in real.split(',')]
-		KP.append([img, real]) 
+	# Get point on plane for each point on 2D trajectory
+	tr3D = []
+	for point in tr2d[1:-1]:
+		imgpoint = point[1:3]
+		lfa1, lfa2 = np.array(get_3D_position(imgpoint=imgpoint, objpoint={'X': None, 'Y': None, 'Z': 1}, point=False))
+		# lfa2 = lfa1
+		# np.array(get_3D_position(imgpoint=imgpoint, objpoint={'X':None, 'Y':None, 'Z': 10}))
+		print(lfa1, lfa2)
+		line = Line3D(Point3D(lfa1[0], lfa1[1], lfa1[2]), Point3D(lfa2[0], lfa2[1], lfa2[2]))
 
-# We need to find extrinsic (rotation matrix and translation) and intrinsic (brennweite, pixel size, image center)
-# we define alpha = s_y / s_x; f_x = f/s_x, f_y = f/s_y
+		# Calculate intersect
+		res = plane.intersection(line)
+		res = [float(x) for x in res[0]]
+		tr3D += [res]
 
-def radDist(image):
-	imgnew = np.zeros(image.shape)
-	for x in range(image.shape[0]):
-		for y in range(image.shape[1]):
-			x_ = x + x*(k1*(x**2+y**2)+k2*(x**2+y**2)**2)
-			y_ = y + y*(k1*(x**2+y**2)+k2*(x**2+y**2)**2)
-			#print(x_, y_)
-			try:
-				imgnew[int(x_),int(y_)] = image[x,y]
-			except IndexError:
-				pass
-	return imgnew
+	return tr3D
 
-def calibration(m):
-	R = np.zeros([3,3])
-	#define central point of goProFrame as imagecenter
-	o_x, o_y = image.shape[0]/2, image.shape[1]/2
-	#shift image points to new origin
-	[for x in matches[:,0] x - [o_x,o_y]]
-	A = np.zeros([8,8])
-	b = np.zeros(8)
-	for i in range(8):
-		A[i] = [m[i,0,0]*m[i,1,0], m[i,0,0]*m[i,1,1],m[i,0,0]*m[i,1,2], m[i,0,0], -m[i,0,1]*m[i,1,0],-m[i,0,1]*m[i,1,1],-m[i,0,1]*m[i,1,2],-m[i,0,1]] 
-	#Solve for r21, r22, r23, t_y, alpha*r11, alpha*r12, alpha*r13, alpha*t_x
-	v = np.linalg.solve(A, b)
-	t_y = v[3]
-	R[1] = v[:3]
+def get_time(tr2d, framerate=25):
+    start_frame = int(tr2d[0][0])
+    end_frame = int(tr2d[-1][0])
+    diff_frame = end_frame-start_frame
+    time = diff_frame / framerate
+    return time
 
-	#Calculate scale v_ = gamma*v
-	gamma = abs(sqrt(v[0]**2+v[1]**2+v[2]**2))
-	alpha = sqrt(v[4]**2+v[5]**2+v[6]**2) / gamma
-	#third row of rotation matrix
-	t_y = v[7]/alpha
-	R[0] = v[4:7]/alpha
-	R[2] = np.cross(R[0],R[1])
+if __name__  == "__main__":
 
-	#get sign
-	if (R[0]*m[0,1]+t_y)*m[0,0,0] > 0:
-		R[0] *= -1
-		R[1] *= -1
-		t_x *= -1
-		t_y *= -1
+	parser = argparse.ArgumentParser(description='Calculates camera calibration')
+	parser.add_argument('--PathToCaliPoints', metavar='Path to calibration points', nargs=1,
+	                    help='txt file with calibration parameters in form (60,899);(1.37,0,0) where first tuple is image point and second tuple is world point')
+	parser.add_argument('--imgpath', metavar='Path to image', nargs=1,
+	                    help='path to image which was used for defining calibration points, undistorted image will be shown.')
+	parser.add_argument('--useexample', metavar='Use example image', help='Use example image and calibration points')
+	parser.add_argument('--KerberHalep', metavar='Use Kerber vs. Halep Australian Open video', help='User Kerber Halep example')
+	parser.add_argument('--GoPro', metavar='Use GoPro Video', help='Use GoPro Video as example')
+	parser.add_argument('--ballpositions', metavar='Position of ball in video',
+	                    help='Position of ball in frames which was returned from tensorflow object detetion API')
+	args = parser.parse_args()
+	print(args)
+	if args.PathToCaliPoints is None and args.useexample is None:
+		parser.error("if --useexample is None --PathToCaliPoints AND --imgpath is required.")
 
-	#Since Rotation matrix not orthogonal because of noise perform SVD
-	U,D,V = np.linalg.svd(R)
-	R = U @ np.diag(np.ones(len(D)))@V
+	if args.useexample is not None:
+		# Use example image
+		if args.KerberHalep is not None:
+			imgpath = os.path.join(os.getcwd(), '../../Videos/GoPro/GoProFrames/3_image_GP_00306.png')
+			image = plt.imread(imgpath)
+			PathToCaliPoints = '/home/lea/Dokumente/FSU/Anwendungspraktikum/cvtennis/code/Kalibrierung_KerbHal_planar.txt'
+		elif args.GoPro is not None:
+			image = cv2.imread('/home/lea/Dokumente/FSU/Anwendungspraktikum/Videos/GoPro/GoProFrames/image_GP_00001.png')
+			image = plt.imread(imgpath)
+			PathToCaliPoints = '/home/lea/Dokumente/FSU/Anwendungspraktikum/cvtennis/code/Kalibrierung_planar.txt'
+		else:
+			imgpath = os.path.join(os.getcwd(), '../../Videos/GoPro/GoProFrames/3_image_GP_00306.png')
+			image = plt.imread(imgpath)
+			PathToCaliPoints = '/home/lea/Dokumente/FSU/Anwendungspraktikum/cvtennis/code/Kalibrierung_KerbHal_planar.txt'
+	else:
+		image = args.imgpath
+		img = cv2.imread(image)
+		PathToCaliPoints = args.PathToCaliPoints
 
-	return R,t_x,t_y
+	#h, w = img.shape[:2]
+	#ret, mtx, dist, rvecs, tvecs, imgpoints, objpoints, newcameramtx, roi = calibration.getCalibration(PathToCaliPoints=PathToCaliPoints, image_width = w, image_height = h)
+	ret, M, D, R, T, imgpoints, objpoints, newM, roi = getCalibration(PathToCaliPoints=PathToCaliPoints,
+	                                                                  image_width=img.shape[1],
+	                                                                  image_height=img.shape[0])
+	R,T,F = transform_params(R,T)
+	get_3D_position(imgpoint=[280, 825], objpoint={'X':None, 'Y':None, 'Z':0}, R=R, M=M, T=T, F=F, point=True)
 
-#NonRad = radDist(image)
+	#calibration.getCalibration(PathToCaliPoints=PathToCaliPoints, image_width = 1920, image_height = 1080)
 
-#plt.imshow(NonRad)
-#plt.show()
-
-def get3D(Pos, calibration):
-	return 0
+	# Get matrix for 2d to 3d projection
 
