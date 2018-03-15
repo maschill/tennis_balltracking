@@ -406,16 +406,16 @@ while cap.isOpened():
         h_last_frame = h_best
         points_new = ptransform(court_points,h_best)
         warp_lines = [
-            [points_new[0], points_new[4]], #left sideline
+            [points_new[0], points_new[4]], # left sideline
             [points_new[3], points_new[7]], # right sideline
-            [points_new[0], points_new[3]], #far baseline
-            [points_new[4], points_new[7]], #near baseline
-            [points_new[1], points_new[5]], #right single sideline
-            [points_new[2], points_new[6]], #left single sideline
-            [points_new[8], points_new[9]], #far service line
-            [points_new[11], points_new[12]], #near service line
-            [points_new[10], points_new[13]],  #center service line
-            [points_new[14], points_new[15]]   #halfway line
+            [points_new[0], points_new[3]], # far baseline
+            [points_new[4], points_new[7]], # near baseline
+            [points_new[1], points_new[5]], # right single sideline
+            [points_new[2], points_new[6]], # left single sideline
+            [points_new[8], points_new[9]], # far service line
+            [points_new[11], points_new[12]], # near service line
+            [points_new[10], points_new[13]],  # center service line
+            [points_new[14], points_new[15]]   # halfway line
             ]
     if warp_lines is not None:
         for l in warp_lines:
