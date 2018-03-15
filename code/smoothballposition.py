@@ -3,7 +3,7 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 
-def read_tf_output(file, image):
+def ReadTFOutput(file, image):
 	ballpos = np.array([])
 	with open(file, 'r') as f:
 		for i, row in enumerate(f):
@@ -25,7 +25,7 @@ def read_tf_output(file, image):
 	ballpos = ballpos.reshape(-1, 4)
 	return ballpos
 
-def maximum_dist_ball_per_frame_in_pxl(framerate, outleftnet_pxl, outrightnet_pxl, maxspeed_km_h=200):
+def MaxDistBallPerFramePXL(framerate, outleftnet_pxl, outrightnet_pxl, maxspeed_km_h=200):
 	# Parameters for smoothing
 	maxspeed_km_sec = maxspeed_km_h / 60 / 60
 	maxspeed_m_sec = maxspeed_km_sec * 1000
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 		image = plt.imread(os.path.join(os.getcwd(), path))
 
 	# Example for Kerber Halep video
-	ballpos = read_tf_output(file, image)
-	mdist_pxl = maximum_dist_ball_per_frame_in_pxl(25, [535,1270], [640, 374], 160)
+	ballpos = ReadTFOutput(file, image)
+	mdist_pxl = MaxDistBallPerFramePXL(25, [535,1270], [640, 374], 160)
 	smballpos = smoothball(ballpos, ThesBallDetection=0.2, mdist_pxl=mdist_pxl)
 	PlotSmoothVsNotSoSmooth(ballpos, smballpos, image, startframe=args.startframe, seqlength=args.seqlength)

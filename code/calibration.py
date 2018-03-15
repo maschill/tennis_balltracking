@@ -17,7 +17,7 @@ def getCalibration(PathToCaliPoints, image_width=1920, image_height=1080):
             objp = [float(x.strip('))\n(')) for x in objp.split(',')]
             imgpoints = np.append(imgpoints, [imgp], axis=0)
             objpoints = np.append(objpoints, [objp], axis=0)
-            print(imgp, objp)
+
     imgpoints = np.array(imgpoints)
     imgpoints = imgpoints.astype('float32')
     objpoints = np.array(objpoints)
@@ -79,5 +79,3 @@ if __name__  == "__main__":
 	plt.figure(figsize=(19,8))
 	plt.imshow(images)
 	plt.show()
-
-	return

@@ -1,47 +1,69 @@
 from matplotlib import pyplot as plt
 from matplotlib.colors import Colormap
+from sklearn import linear_model
 import numpy as np
 import math
 
-path = '/home/lea/Dokumente/FSU/Anwendungspraktikum/Videos/GoPro/GoProFrames'
-coords = []
-with open('/home/lea/Dokumente/FSU/Anwendungspraktikum/points.txt', 'r') as f:
-	for row in f:
-		for coord in row.split('; '):
-			x,y = coord[1:-1].split(', ')
-			coords.append([int(x), int(y)])
 
-f = 18 #first f values represent court
-court = np.array(coords)
-coords = np.array(coords[18:])
-
-#calculate line through two points
-def l(p1,p2):
-	return p2-p1
+def regression(points):
+    reg = linear_model.LinearRegression()
+    reg.fit(points[:,0].reshape(-1,1), points[:,1].reshape(-1,1))
+    return reg.coef_, reg.intercept_, reg.score(points[:,0].reshape(-1,1), points[:,1].reshape(-1,1))
 
 #calulate angular between two lines
-def angular(r1, r2): # r1, r2 direction vectors of line
-	alphaRad = math.acos(abs(np.dot(r1, r2)) / (np.linalg.norm(r1) * np.linalg.norm(r2)))
-	alpha = math.degrees(alphaRad)
-	return alpha
+# r1, r2 direction vectors of line
+def angular(r1, r2):
+    try:
+        alphaRad = math.acos(np.dot(r1, r2) / (np.linalg.norm(r1) * np.linalg.norm(r2)))
+        alpha = math.degrees(alphaRad)
+        return alpha
+    #In case lines are (almost) parallel
+    except ValueError:
+        return 0
 
-cp = np.zeros(len(coords))
-for i in range(len(coords)-2):
-	print(l(coords[i], coords[i+1]), l(coords[i+1], coords[i+2]))
-	if np.any(l(coords[i], coords[i+1])) > 0 and np.any(l(coords[i+1], coords[i+2])) > 0: #make sure not to divide by zero
-		alpha = angular(l(coords[i], coords[i+1]), l(coords[i+1], coords[i+2]))
-		if alpha < 90:
-			cp[i] = 1
-	else: # ball did not move in image
-		pass
+# Number of points which are used for regression
+# Because of smoothing edges disappear. Jump can be used to leave points out
+def genFeatures(smpos, nump=3, jump=1):
 
-#plt.plot(court[:18,0], court[:18,1], 'r')
-col = Colormap('col')
-plt.plot(coords[:,0], coords[:,1],'.')
-for i in range(len(cp)):
-	if cp[int(i)] == 1:
-		print(coords[int(i),0], cp[int(i)])
-		plt.scatter(coords[int(i),0], coords[int(i),1])
-plt.gca().invert_yaxis()
-#plt.scatter(coords[:,0], cp)
-plt.show()
+	# Output array
+	bouncehitfeatures = []
+
+	# Generate features for each point in smoothed points
+	for i in range(jump+nump-1, len(smpos)-nump-jump-1,1):
+
+	    # Calculate regression through nump number of points
+	    slo1, int1, sc1 = regression(smpos[i-jump-nump+1:i-jump+1, 1:3])
+	    slo2, int2, sc2 = regression(smpos[i+jump:i+jump+nump, 1:3])
+
+	    # Check orientation, since slope must be negativ if x and y < 0
+	    x1, x2 = 1, 1
+	    val1 = smpos[i-jump,1:3] - smpos[i-jump-nump+1,1:3]
+	    if val1[0] < 0 and val1[1] < 0:
+	        slo1[0, 0] *= -1
+	        x1 = -1
+	    if val1[0] < 0 and val1[1] > 0:
+	        slo1[0, 0] *= -1
+	        x1= -1
+	    #print(i, i+jump+nump-1)
+	    val2 = smpos[i+jump+nump-1,1:3] - smpos[i+jump,1:3]
+	    if val2[0] < 0 and val2[1] < 0:
+	        slo2[0, 0] *= -1
+	        x2 = -1
+	    if val2[0] < 0 and val2[1] > 0:
+	        slo2[0, 0] *= -1
+	        x2 = -1
+
+	    #calculate angle if except lines are parallel
+	    alpha = angular([x1,slo1[0,0]], [x2,slo2[0,0]])
+
+	    # Calculate sum of direction vectors between each two points
+	    r1 = sum(smpos[i-jump-nump+1:i-jump+1, 1:3] - smpos[i+jump, 1:3])
+	    r2 = sum(smpos[i+jump:i+jump+nump, 1:3] - smpos[i+jump, 1:3])
+
+	    # Create full imagename from tensorflow digits
+	    imgname = '3_image_GP_'+str(int(smpos[i,0])).zfill(5)+ '.png'
+	    bouncehitfeatures += [imgname, alpha, sc1, sc2, r1[0], r1[1], r2[0], r2[1]]
+
+	bouncehitfeatures = np.array(bouncehitfeatures).reshape(-1, 8)
+	
+	return bouncehitfeatures
