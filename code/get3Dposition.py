@@ -87,7 +87,7 @@ def get_trajectory(tr2d, R, M, T, F,):
 
 	# Get point on plane for each point on 2D trajectory
 	tr3D = []
-	for point in tr2d[1:-1]:
+	for point in tr2d:
 		imgpoint = point[1:3]
 		lfa1, lfa2 = np.array(get_3D_position(imgpoint=imgpoint, R=R, M=M, T=T, F=F, objpoint={'X': None, 'Y': None, 'Z': 1}, point=False))
 		# lfa2 = lfa1
