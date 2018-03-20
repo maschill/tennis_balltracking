@@ -18,3 +18,4 @@ ssd_*/**
 /.idea/misc.xml
 /.idea/workspace.xml
 .Rhistory
+.directory
