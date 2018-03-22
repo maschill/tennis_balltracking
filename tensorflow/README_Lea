@@ -1,35 +1,40 @@
+#############################################################################################################
+A very good tutorial to use the object detection API can be found here:
+https://pythonprogramming.net/introduction-use-tensorflow-object-detection-api-tutorial/
+
+#############################################################################################################
 #ToDo before training
 *	Annotated Frames located at ../Videos/VideonameFrames/
 	frames Extract: ffmpeg -i Tennis_Best_Points_2017.mkv frames/image_TBP17_%05d.png
-*	Create tf.record files in tensorflow/data; check out tensorflow/README_Lea_tf.txt
+*	Create tf.record files in tensorflow/data; Siehe: Erstellen von tf record file:
 *	faster_rcnn_resnet101_coco_2017_11_08 model used for training tensorflow/models/ can be downloaded from 
 	https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md
 	Rename model.ckpt.data-00000-of-00001 to model.ckpt
 *	Change paths in tensorflow/model.config file
 *	go to models/research/object_detection and run train.py
 
-
+#############################################################################################################
+#Erstellen von tf record file:
 Creating tfrecord file for images go to:
 https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/using_your_own_dataset.md
-
 
 tf.record files müssen selbst erstellt werden, da git Speicher zu klein.
 1.) Datei mit Annotationen in cvtennis/annotations suchen.
 2.) videoname_test.record und videoname_train.record files in cvtennis/tensorflow/data erstellen
-3.) txt python_to_tfrecord_multiclass.py --input_path=../annotations/file_train_test.txt --output_path=/home/lea/Dokumente/FSU/Anwendungspraktikum/tensorflow/data/file_train_test.record --image_folder=/home/lea/Dokumente/FSU/Anwendungspraktikum/Videos/file
+3.) txt txt_to_tfrecord_multiclass.py / txt_to_tfrecord.py --input_path=../annotations/file_train_test.txt --output_path=/home/lea/Dokumente/FSU/Anwendungspraktikum/tensorflow/data/file_train_test.record --image_folder=/home/lea/Dokumente/FSU/Anwendungspraktikum/Videos/file
 Beispiel:
 python txt_to_tfrecord_multiclass.py --input_path=../annotations/GoProDiffAnnotation_test.txt --output_path=/home/lea/Dokumente/FSU/Anwendungspraktikum/cvtennis/tensorflow/data/GoProDiff_test.record --image_folder=/home/lea/Dokumente/FSU/Anwendungspraktikum/Videos/GoPro/GoProFramesDiff/
-4.) In tensorflow/data map.pbtxt erstellen mit entsprechenden Klassen
+4.) In tensorflow/data map.pbtxt mit entsprechenden Klassen erstellen
 5.) in tensorflow/models config file erstellen (Zu ändern:
-- Input files .record
-- Number classes
-- finetune checkpoints
-- map file .pbtxts)
+												- Input files .record
+												- Number classes
+												- finetune checkpoints
+												- map file .pbtxts)
 
 In /models/training werden checkpoints gespeichert (checkpoints sind in gitignore, erst wenn model gut genug für weitere Berechnungen ist)
 
-
-Run in console:
+#############################################################################################################
+#In Konsole ausführen
 TF RECORDS ERSTELLEN /TENSORFLOW
 Umgebung: Egal; Rechner: Egal
 python txt_to_tfrecord.py --input_path=/home/mueller/code/python/Anwendungspraktikum/cvtennis/annotations/GoProBall_train.txt --output_path=/home/mueller/code/python/Anwendungspraktikum/cvtennis/tensorflow/data/GoProBallAll_train.record --image_folder=/home/mueller/code/python/Anwendungspraktikum/Videos/GoPro/GoProFrames
