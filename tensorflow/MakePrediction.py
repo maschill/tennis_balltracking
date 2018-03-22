@@ -55,7 +55,7 @@ if __name__ == "__main__":
 	parser.add_argument('--Player', metavar = 'detect player in image', nargs=1,
 		     help='if set model for player detection is used. Otherwise ball will be detected.')
 	args = parser.parse_args()
-	print(args)
+
 # What model to download.
 MODEL_DIR = os.path.join(os.getcwd(), 'models/')
 
