@@ -2,15 +2,13 @@
 
 3D reconstruction of tennis ball trajectory and tennis court detection to generate game statistics from tennis videos. To see the results of the detection checkout our video in results/BounceAndHitDetection.mp4 (green Bounce, red Hit)
 
-Workflow as follows:
-* detect tennis balls using tensorflow object detection api
-* detect court lines to estimate calibration parameters
-* Calibrate camera based on tennis court edges
-* A random forest detects hit and bounce points in 2D video
-* Reconstruct 3D trajectory between hit (assume hit takes place at 1 meter height z=1) an bounce (z=0) point
-* Calculate for example speed of serve based on trajectory and time
-
-The workflow for reconstruction is described in code/DataFlow.ipynb
+The workflow for reconstruction is described in code/DataFlow.ipynb. Steps are as follows
+	* Detect tennis balls using tensorflow object detection api
+	* Detect court lines to estimate calibration parameters
+	* Calibrate camera based on tennis court edges
+	* A random forest detects hit and bounce points in 2D video
+	* Reconstruct 3D trajectory between hit (assume hit takes place at 1 meter height z=1) an bounce (z=0) point
+	* Calculate for example speed of serve based on trajectory and time
 
 ### How do I get set up? ###
 
