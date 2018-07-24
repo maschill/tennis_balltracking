@@ -20,3 +20,5 @@ ssd_*/**
 .Rhistory
 .directory
 Meilenstein1.pdf
+/code/ReconstructionProcessOLD.ipynb
+/code/tstest.ipynb
