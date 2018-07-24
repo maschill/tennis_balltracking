@@ -1,17 +1,29 @@
 # README #
 
-3D reconstruction of tennis ball trajectory and tennis court detection to generate game statistics from tennis videos.
+3D reconstruction of tennis ball trajectory and tennis court detection to generate game statistics from tennis videos. To see the results of the detection checkout our video in results/BounceAndHitDetection.mp4 (green Bounce, red Hit)
 
-To see the results of the detection checkout our video in results/BounceAndHitDetection.mp4 (green Bounce, red Hit)
+Workflow as follows:
+* detect tennis balls using tensorflow object detection api
+* detect court lines to estimate calibration parameters
+* Calibrate camera based on tennis court edges
+* A random forest detects hit and bounce points in 2D video
+* Reconstruct 3D trajectory between hit (assume hit takes place at 1 meter height z=1) an bounce (z=0) point
+* Calculate for example speed of serve based on trajectory and time
 
-The workflow for reconstruction is described in code/ReconstructionProcess.ipynb and for court detection in code/surface_fitting.ipynb
+The workflow for reconstruction is described in code/DataFlow.ipynb
 
 ### How do I get set up? ###
 
-* Summary of set up
-* Configuration
-* Dependencies
+* To run jupyter notebook Install python > 3.5 with jupyter (we recommend using anaconda) and packages (tested version) 
+	* cv2 (3.2.0)
+	* sklearn (0.19.1)
+	* pandas (0.22.0)
+	* numpy (1.13.3)
+	* matplotlib (2.2.2)
+* To see 3D animation in notebook install
+	* holoviews (1.8.3)
+	* plotly (2.2.3)
 
 ### Who do I talk to? ###
 
-* for questions about reconstruction contact mueller.lea@uni-jena.de and for court detection matthias.schilling@uni-jena.de
+* For questions about reconstruction and ball detection contact mueller.lea@uni-jena.de and for court detection matthias.schilling@uni-jena.de
