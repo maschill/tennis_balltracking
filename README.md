@@ -24,6 +24,3 @@ To see the results of the detection checkout our video in **results/BounceAndHit
 	* holoviews (1.8.3)
 	* plotly (2.2.3)
 
-### Who do I talk to? ###
-
-* For questions about reconstruction and ball detection contact mueller.lea@uni-jena.de and for court detection matthias.schilling@uni-jena.de
